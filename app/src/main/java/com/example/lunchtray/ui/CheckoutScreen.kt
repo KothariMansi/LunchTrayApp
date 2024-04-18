@@ -42,10 +42,20 @@ import com.example.lunchtray.model.OrderUiState
 @Composable
 fun CheckoutScreen(
     orderUiState: OrderUiState,
-    onNextButtonClicked: () -> Unit,
+    onNextButtonClicked: (String, String) -> Unit,
     onCancelButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val newOrder = stringResource(R.string.new_order_for_lunch)
+    val orderSummary = """
+        Entree : ${orderUiState.entree?.name}
+        SideDish : ${orderUiState.sideDish?.name}
+        Accompaniment : ${orderUiState.accompaniment?.name}
+        TotalPrice : ${orderUiState.orderTotalPrice}
+        ThankYou!
+    """.trimIndent()
+
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
@@ -92,7 +102,7 @@ fun CheckoutScreen(
             }
             Button(
                 modifier = Modifier.weight(1f),
-                onClick = onNextButtonClicked
+                onClick = { onNextButtonClicked(newOrder, orderSummary) }
             ) {
                 Text(stringResource(R.string.submit).uppercase())
             }
@@ -138,7 +148,7 @@ fun CheckoutScreenPreview() {
             orderTax = 1.00,
             orderTotalPrice = 16.00
         ),
-        onNextButtonClicked = {},
+        onNextButtonClicked = {_: String, _: String -> },
         onCancelButtonClicked = {},
         modifier = Modifier
             .padding(dimensionResource(R.dimen.padding_medium))

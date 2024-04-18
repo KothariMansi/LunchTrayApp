@@ -15,11 +15,15 @@
  */
 package com.example.lunchtray
 
+import android.content.Context
+import android.content.Intent
 import android.service.autofill.LuhnChecksumValidator
 import android.view.MenuItem
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -134,6 +138,9 @@ fun LunchTrayApp(
                         navController.navigate(LunchTrayScreen.SideDishMenu.name)
                     },
                     onSelectionChanged = {  menuItem -> viewModel.updateEntree(menuItem)},
+                    modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_medium))
+                        .verticalScroll(rememberScrollState())
                 )
             }
 
@@ -144,7 +151,10 @@ fun LunchTrayApp(
                         cancelOrderAndNavigationToStart(viewModel = viewModel, navController = navController)
                                             },
                     onNextButtonClicked = { navController.navigate(LunchTrayScreen.AccompanimentMenu.name) },
-                    onSelectionChanged = { menuItem -> viewModel.updateSideDish(menuItem)}
+                    onSelectionChanged = { menuItem -> viewModel.updateSideDish(menuItem)},
+                    modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_medium))
+                        .verticalScroll(rememberScrollState())
                 )
             }
 
@@ -155,17 +165,25 @@ fun LunchTrayApp(
                         cancelOrderAndNavigationToStart(viewModel = viewModel, navController = navController)
                                             },
                     onNextButtonClicked = { navController.navigate(LunchTrayScreen.CheckOut.name) },
-                    onSelectionChanged = { menuItem -> viewModel.updateAccompaniment(menuItem) }
+                    onSelectionChanged = { menuItem -> viewModel.updateAccompaniment(menuItem) },
+                    modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_medium))
+                        .verticalScroll(rememberScrollState())
                 )
             }
 
             composable(LunchTrayScreen.CheckOut.name) {
+                val context = LocalContext.current
                 CheckoutScreen(
                     orderUiState = uiState,
-                    onNextButtonClicked = { navController.navigate(LunchTrayScreen.Start.name) },
+                    onNextButtonClicked = { subject: String, summary: String ->
+                                          shareOrder(context, subject, summary)},
                     onCancelButtonClicked = {
                         cancelOrderAndNavigationToStart(viewModel = viewModel, navController = navController)
-                    }
+                    },
+                    modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_medium))
+                        .verticalScroll(rememberScrollState())
                 )
             }
 
@@ -173,10 +191,25 @@ fun LunchTrayApp(
     }
 }
 
-fun cancelOrderAndNavigationToStart(
+private fun cancelOrderAndNavigationToStart(
     viewModel: OrderViewModel,
     navController: NavHostController
 ) {
    viewModel.resetOrder()
    navController.popBackStack(LunchTrayScreen.Start.name, inclusive = false)
+}
+
+private fun shareOrder(context: Context, subject: String, summary: String){
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, summary)
+    }
+    context.startActivity(
+        Intent.createChooser(
+            intent,
+            "New Cupcake Order"
+        )
+    )
+
 }
